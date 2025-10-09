@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini-Book Prompt Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient-start: #1f2937;
+      --bg-gradient-end: #111827;
+      --card-bg: rgba(31, 41, 55, 0.5); /* Semi-transparent card background */
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-primary: #f9fafb;
+      --text-secondary: #d1d5db;
+      --text-heading: #ffffff;
+      --accent-primary: #22d3ee;
+      --accent-hover: #67e8f9;
+      --accent-success: #34d399;
+      --input-bg: #374151;
+      --code-bg: rgba(0, 0, 0, 0.3);
+      --shadow-color: rgba(0, 0, 0, 0.25);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      flex-grow: 1;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -1px;
+      margin-bottom: 10px;
+    }
+    p.subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+    .input-section {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 40px;
+        background-color: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 8px 32px 0 var(--shadow-color);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    .input-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .input-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-secondary);
+    }
+    .input-group textarea {
+        background-color: var(--input-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        padding: 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+        resize: vertical;
+        min-height: 80px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .input-group textarea:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.3);
+    }
+    .prompts-container {
+      display: grid;
+      gap: 30px;
+    }
+    .prompt-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px 0 var(--shadow-color);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px); /* For Safari */
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .prompt-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 var(--shadow-color);
+    }
+    .prompt-card h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .prompt-text {
+      background-color: var(--code-bg);
+      padding: 20px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: 'Source Code Pro', "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-weight: 400; /* Regular weight for better readability */
+      flex-grow: 1;
+      margin-bottom: 20px;
+      border: 1px solid var(--card-border);
+    }
+    .copy-button {
+      align-self: flex-end;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--bg-gradient-end);
+      background-color: var(--accent-primary);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .copy-button:hover {
+      background-color: var(--accent-hover);
+      transform: scale(1.05);
+    }
+    .copy-button.copied {
+      background-color: var(--accent-success);
+    }
+    .copy-button .icon { width: 16px; height: 16px; }
+    .copy-button .copied-icon { display: none; }
+    .copy-button.copied .copy-icon { display: none; }
+    .copy-button.copied .copied-icon { display: inline-block; }
+
+    .footer {
+        text-align: center;
+        margin-top: 50px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .input-section {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 20px 15px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .prompt-card h2 {
+        font-size: 1.4rem;
+      }
+      .prompt-text {
+          font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Mini-Book Prompt Generator</h1>
+      <p class="subtitle">Fill in the fields below to dynamically generate prompts for your mini-book.</p>
+    </header>
+
+    <main>
+      <section class="input-section">
+        <div class="input-group">
+          <label for="real-struggle">Real Struggle</label>
+          <textarea id="real-struggle" placeholder="e.g., Feeling overwhelmed and unfocused"></textarea>
+        </div>
+        <div class="input-group">
+          <label for="real-change">Real Change</label>
+          <textarea id="real-change" placeholder="e.g., Achieving calm clarity and productivity"></textarea>
+        </div>
+        <div class="input-group">
+          <label for="what-to-do">What To Do</label>
+          <textarea id="what-to-do" placeholder="e.g., Implementing a 5-minute daily mindfulness routine"></textarea>
+        </div>
+        <div class="input-group">
+          <label for="initial-belief">Initial Belief</label>
+          <textarea id="initial-belief" placeholder="e.g., 'I don't have time for self-care'"></textarea>
+        </div>
+        <div class="input-group">
+          <label for="transformed-belief">Transformed Belief</label>
+          <textarea id="transformed-belief" placeholder="e.g., 'Small, consistent actions create massive change'"></textarea>
+        </div>
+        <div class="input-group">
+          <label for="change-of-beliefs">Change of Beliefs & Habits</label>
+          <textarea id="change-of-beliefs" placeholder="e.g., Shifting from reactive chaos to proactive intention"></textarea>
+        </div>
+      </section>
+
+      <div class="prompts-container" id="promptsContainer">
+        <div class="prompt-card">
+          <h2>✅ Prompt 1 — Determine Type and Chapter Count</h2>
+          <pre id="prompt1Output" class="prompt-text"></pre>
+          <button class="copy-button" data-target="prompt1Output">
+            <svg class="icon copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+            <svg class="icon copied-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            <span class="button-text">Copy Prompt</span>
+          </button>
+        </div>
+
+        <div class="prompt-card">
+          <h2>✅ Prompt 2 — Define Chapter Roles and Structure</h2>
+          <pre id="prompt2Output" class="prompt-text"></pre>
+          <button class="copy-button" data-target="prompt2Output">
+            <svg class="icon copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+            <svg class="icon copied-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+            <span class="button-text">Copy Prompt</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+        <p>Copyright &copy; <script>document.write(new Date().getFullYear())</script> Siva Prasad Mukherjee. All Rights Reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = {
+        struggle: document.getElementById('real-struggle'),
+        change: document.getElementById('real-change'),
+        whatToDo: document.getElementById('what-to-do'),
+        initialBelief: document.getElementById('initial-belief'),
+        transformedBelief: document.getElementById('transformed-belief'),
+        changeOfBeliefs: document.getElementById('change-of-beliefs'),
+      };
+      
+      const outputs = {
+        prompt1: document.getElementById('prompt1Output'),
+        prompt2: document.getElementById('prompt2Output'),
+      };
+
+      const promptsContainer = document.getElementById('promptsContainer');
+
+      function updatePrompts() {
+        const values = {
+          struggle: inputs.struggle.value || '[real struggle]',
+          change: inputs.change.value || '[real change]',
+          whatToDo: inputs.whatToDo.value || '[Insert what to do]',
+          initialBelief: inputs.initialBelief.value || '[insert initial belief]',
+          transformedBelief: inputs.transformedBelief.value || '[insert transformed belief]',
+          changeOfBeliefs: inputs.changeOfBeliefs.value || '[insert the change of beliefs and habits]',
+        };
+
+        const prompt1Template = `Here’s the transformation my book aims to inspire in its readers:
+“From ${values.struggle} → to ${values.change}.”
+
+The path "From ${values.struggle} → to ${values.change}, i.e., what to do for this transformation: ${values.whatToDo}
+
+Reader's beliefs in their ${values.struggle}: ${values.initialBelief}
+
+Reader's beliefs in their ${values.change}: ${values.transformedBelief}
+
+The change to bring in the reader's beliefs and habits: ${values.changeOfBeliefs}
+
+The path from struggle to change is already clear in my mind.
+
+Please analyze this transformation and tell me:
+
+1️⃣ Type of Mini-Book:
+
+What general type or niche does this idea fit best into — for example, mindfulness, self-care, habit-building, mindset change, belief shift, or process-based learning?
+
+2️⃣ Recommended Number of Chapters:
+
+Based on the depth of this transformation, how many chapters or main steps would make sense to take the reader from the starting point to the end? (Suggest a range between 3 and 7 and explain why.)
+
+🎯 Goal: To confirm the overall category and scope of the mini-book before outlining individual chapters.`;
+
+        const prompt2Template = `Using the transformation and chapter count from Prompt 1:
+
+1️⃣ For each chapter, describe its focus and specific role in supporting the reader’s transformation.
+
+Explain what realization, mindset shift, or practice the reader gains in that stage.
+
+Suggest an effective chapter structure (for example: Opening → Key Idea → Example → Practice → Reflection → Takeaway).
+
+2️⃣ For each chapter, specify how the reader should feel at the end — e.g., relieved, hopeful, curious, empowered, peaceful, or motivated.
+
+🎯 Goal: To map the transformation architecture—a clear step-by-step journey where each chapter has a defined purpose, flow, and emotional impact.`;
+
+        outputs.prompt1.textContent = prompt1Template;
+        outputs.prompt2.textContent = prompt2Template;
+      }
+      
+      // Add event listeners to all inputs
+      Object.values(inputs).forEach(input => {
+        input.addEventListener('input', updatePrompts);
+      });
+
+      // Initial call to populate prompts on page load
+      updatePrompts();
+
+      // Event delegation for the copy buttons
+      promptsContainer.addEventListener('click', (event) => {
+        const button = event.target.closest('.copy-button');
+        if (!button) return;
+
+        const targetId = button.dataset.target;
+        const textToCopy = document.getElementById(targetId).textContent;
+        const buttonTextEl = button.querySelector('.button-text');
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const originalText = buttonTextEl.textContent;
+          buttonTextEl.textContent = 'Copied!';
+          button.classList.add('copied');
+          
+          setTimeout(() => {
+            buttonTextEl.textContent = originalText;
+            button.classList.remove('copied');
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy text: ', err);
+          alert('Failed to copy text. Please try again.');
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
